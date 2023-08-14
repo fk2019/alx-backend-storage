@@ -1,8 +1,21 @@
 #!/usr/bin/env python3
 """Example of redis cache"""
+from functools import wraps
 from typing import Union, Callable, Optional
 import redis
 import uuid
+
+
+def count_calls(method: Callable) -> Callable:
+    """decorator function to define a wrapper function"""
+    name = method.__qualname__
+
+    @wraps(method)
+    def wrapper(self, *args, **kwargs):
+        """Wrapper function"""
+        self._redis.incr(name)
+        return method(self, *args, **kwargs)
+    return wrapper
 
 
 class Cache():
@@ -12,6 +25,7 @@ class Cache():
         self._redis = redis.Redis()
         self._redis.flushdb()
 
+    @count_calls
     def store(self, data: Union[str, bytes, int, float]) -> str:
         """generate random key amd store input in Redis"""
         key = str(uuid.uuid4())
