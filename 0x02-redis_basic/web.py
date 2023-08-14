@@ -15,8 +15,8 @@ def count(method: Callable) -> Callable:
     def wrapper(*args, **kwargs):
         """wrapper function"""
         url = args[0]
-        redis.incr('count: {}'.format(url))
-        cache = redis.get(url)
+        redis.incr('count:{}'.format(url))
+        cache = redis.get('{}'.format(url))
         if cache:
             return cache.decode('utf-8')
         redis.setex(url, 10, method(url))
