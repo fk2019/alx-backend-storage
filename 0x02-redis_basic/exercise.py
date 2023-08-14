@@ -7,7 +7,8 @@ import uuid
 
 
 def count_calls(method: Callable) -> Callable:
-    """decorator function to define a wrapper function"""
+    """decorator function to define a wrapper function
+    that counts times Cache class methods are called"""
     name = method.__qualname__
 
     @wraps(method)
@@ -18,6 +19,22 @@ def count_calls(method: Callable) -> Callable:
     return wrapper
 
 
+def call_history(method: Callable) -> Callable:
+    """decorator func stores history of inputs and outputs for method"""
+    name = method.__qualname__
+    inputs = name + ':inputs'
+    outputs = name + ':outputs'
+
+    @wraps(method)
+    def wrapper(self, *args, **kwargs):
+        """Wrapper method"""
+        self._redis.rpush(inputs, str(args))
+        res = method(self, *args, **kwargs)
+        self._redis.rpush(outputs, str(res))
+        return res
+    return wrapper
+
+
 class Cache():
     """Class Cache generates randon key and returns it"""
     def __init__(self):
@@ -25,6 +42,7 @@ class Cache():
         self._redis = redis.Redis()
         self._redis.flushdb()
 
+    @call_history
     @count_calls
     def store(self, data: Union[str, bytes, int, float]) -> str:
         """generate random key amd store input in Redis"""
