@@ -35,6 +35,21 @@ def call_history(method: Callable) -> Callable:
     return wrapper
 
 
+def replay(method: Callable) -> None:
+    """Display history of calls of particular function"""
+    name = method.__qualname__
+    inputs = name + ':inputs'
+    outputs = name + ':outputs'
+    redis = method.__self__._redis
+    count = redis.get(name).decode('utf-8')
+    print('{} was called {} times:'.format(name, count))
+    zipped = zip(redis.lrange(inputs, 0, -1), redis.lrange(outputs, 0, -1))
+    for i, o in list(zipped):
+        i = i.decode('utf-8')
+        o = o.decode('utf-8')
+        print('{}(*{}) -> {}'.format(name, i, o))
+
+
 class Cache():
     """Class Cache generates randon key and returns it"""
     def __init__(self):
