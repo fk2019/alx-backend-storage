@@ -1,4 +1,4 @@
-#!/usr/bin/en python3
+#!/usr/bin/env python3
 """Example of redis cache"""
 from typing import Union
 import redis
