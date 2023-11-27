@@ -1,0 +1,2 @@
+// match doc with name equal to Holberton school
+db.school.find({"name": "Holberton school"}).pretty()
